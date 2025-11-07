@@ -21,6 +21,9 @@ export const GAME_CONFIG = {
   // World
   TOWN_SIZE: 200,
   DAY_LENGTH_SECONDS: 600, // 10 minutes = 1 day
+
+  // Interaction
+  INTERACTION_RADIUS: 10, // Distance required to interact with buildings
 };
 
 // World boundaries

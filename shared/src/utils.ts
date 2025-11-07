@@ -1,4 +1,4 @@
-import { Vector3 } from './types.js';
+import { Vector3 } from './types';
 
 export function distance(a: Vector3, b: Vector3): number {
   return Math.sqrt(

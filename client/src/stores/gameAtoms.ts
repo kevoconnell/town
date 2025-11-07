@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { SurvivalStats, PlayerState } from '@my-town/shared';
+import { SurvivalStats, PlayerState, BuildingLocation, Vector3 } from '@my-town/shared';
 
 // Connection status type
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';
@@ -9,6 +9,8 @@ export const playerIdAtom = atom<string | null>(null);
 export const connectionStatusAtom = atom<ConnectionStatus>('disconnected');
 export const playersAtom = atom<Map<string, PlayerState>>(new Map());
 export const localStatsAtom = atom<SurvivalStats | null>(null);
+export const buildingsAtom = atom<BuildingLocation[]>([]);
+export const localPositionAtom = atom<Vector3>({ x: 0, y: 0, z: 0 });
 
 // Derived atom for players array
 export const playersArrayAtom = atom((get) => {

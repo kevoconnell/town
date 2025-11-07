@@ -8,6 +8,8 @@ import {
   connectionStatusAtom,
   updatePlayerAtom,
   removePlayerAtom,
+  buildingsAtom,
+  localPositionAtom,
 } from '@/stores/gameAtoms';
 import { NetworkMessage, MessageType, NETWORK_CONFIG } from '@my-town/shared';
 
@@ -25,6 +27,8 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
   const setConnectionStatus = useSetAtom(connectionStatusAtom);
   const updatePlayer = useSetAtom(updatePlayerAtom);
   const removePlayer = useSetAtom(removePlayerAtom);
+  const setBuildings = useSetAtom(buildingsAtom);
+  const setLocalPosition = useSetAtom(localPositionAtom);
 
   // Update ref when playerName changes
   useEffect(() => {
@@ -86,6 +90,7 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
       switch (message.type) {
         case MessageType.CONNECT:
           setPlayerId(message.data.playerId);
+          setBuildings(message.data.buildings || []);
           console.log('Connected with ID:', message.data.playerId);
           break;
 
@@ -110,14 +115,17 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
     // Send position updates
     const intervalId = setInterval(() => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
+        const position = {
+          x: camera.position.x,
+          y: camera.position.y,
+          z: camera.position.z,
+        };
+        setLocalPosition(position);
+
         const message: NetworkMessage = {
           type: MessageType.PLAYER_UPDATE,
           data: {
-            position: {
-              x: camera.position.x,
-              y: camera.position.y,
-              z: camera.position.z,
-            },
+            position,
             rotation: camera.rotation.y,
           },
           timestamp: Date.now(),
@@ -132,7 +140,7 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
         wsRef.current.close();
       }
     };
-  }, [camera, setPlayerId, setConnectionStatus, updatePlayer, removePlayer]);
+  }, [camera, setPlayerId, setConnected, updatePlayer, removePlayer, setBuildings, setLocalPosition]);
 
   return null;
 }

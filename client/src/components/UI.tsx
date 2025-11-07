@@ -1,15 +1,23 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useEffect, useRef, useMemo } from 'react';
+import { useAtomValue } from 'jotai';
 import {
   connectionStatusAtom,
   localStatsAtom,
   playersArrayAtom,
   playerIdAtom,
-  showTutorialAtom,
+  buildingsAtom,
+  localPositionAtom,
 } from '@/stores/gameAtoms';
-import { ActionType, NetworkMessage, MessageType } from '@my-town/shared';
+import {
+  ActionType,
+  NetworkMessage,
+  MessageType,
+  BuildingType,
+  GAME_CONFIG,
+  distance,
+} from '@my-town/shared';
 import styles from './UI.module.css';
 import Tutorial from './Tutorial';
 
@@ -18,7 +26,8 @@ export default function UI() {
   const localStats = useAtomValue(localStatsAtom);
   const players = useAtomValue(playersArrayAtom);
   const playerId = useAtomValue(playerIdAtom);
-  const setShowTutorial = useSetAtom(showTutorialAtom);
+  const buildings = useAtomValue(buildingsAtom);
+  const localPosition = useAtomValue(localPositionAtom);
   const wsRef = useRef<WebSocket | null>(null);
 
   // Check if this is the first time the user is playing
@@ -81,50 +90,26 @@ export default function UI() {
     return '❤️';
   };
 
-  // Get stat color based on value
-  const getStatColor = (value: number): string => {
-    if (value > 60) return styles.statGood;
-    if (value > 20) return styles.statWarning;
-    return styles.statCritical;
-  };
-
-  // Get stat icon
-  const getStatIcon = (statType: string): string => {
-    switch (statType) {
-      case 'hunger': return '🍖';
-      case 'thirst': return '💧';
-      case 'energy': return '⚡';
-      case 'health': return '❤️';
-      default: return '';
-    }
-  };
-
-
-  const getConnectionStatusClass = () => {
-    switch (connectionStatus) {
-      case 'connected':
-        return styles.connected;
-      case 'connecting':
-        return styles.connecting;
-      case 'disconnected':
-        return styles.disconnected;
-      default:
-        return styles.disconnected;
-    }
-  };
-
-  const getConnectionStatusText = () => {
-    switch (connectionStatus) {
-      case 'connected':
-        return 'Connected';
-      case 'connecting':
-        return 'Connecting...';
-      case 'disconnected':
-        return 'Disconnected';
-      default:
-        return 'Disconnected';
-    }
-  };
+  // Calculate proximity to buildings
+  const nearbyBuildings = useMemo(() => {
+    return {
+      well: buildings.some(
+        (b) =>
+          b.type === BuildingType.WELL &&
+          distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
+      ),
+      farm: buildings.some(
+        (b) =>
+          b.type === BuildingType.FARM &&
+          distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
+      ),
+      tavern: buildings.some(
+        (b) =>
+          b.type === BuildingType.TAVERN &&
+          distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
+      ),
+    };
+  }, [buildings, localPosition]);
 
   return (
     <div className={styles.uiOverlay}>
@@ -220,15 +205,47 @@ export default function UI() {
         </div>
       )}
 
+      {/* Action Prompts */}
+      {nearbyBuildings.well && (
+        <div className={styles.actionPrompt}>
+          Press [E] to Drink Water at Well
+        </div>
+      )}
+      {nearbyBuildings.farm && (
+        <div className={styles.actionPrompt}>
+          Press [F] to Gather Food at Farm
+        </div>
+      )}
+      {nearbyBuildings.tavern && (
+        <div className={styles.actionPrompt}>
+          Press [R] to Rest at Tavern
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className={styles.actionsPanel}>
-        <button className={styles.actionBtn} onClick={() => sendAction(ActionType.GATHER_WATER)}>
+        <button
+          className={styles.actionBtn}
+          onClick={() => sendAction(ActionType.GATHER_WATER)}
+          disabled={!nearbyBuildings.well}
+          style={{ opacity: nearbyBuildings.well ? 1 : 0.5 }}
+        >
           Drink Water [E]
         </button>
-        <button className={styles.actionBtn} onClick={() => sendAction(ActionType.GATHER_FOOD)}>
+        <button
+          className={styles.actionBtn}
+          onClick={() => sendAction(ActionType.GATHER_FOOD)}
+          disabled={!nearbyBuildings.farm}
+          style={{ opacity: nearbyBuildings.farm ? 1 : 0.5 }}
+        >
           Eat Food [F]
         </button>
-        <button className={styles.actionBtn} onClick={() => sendAction(ActionType.REST)}>
+        <button
+          className={styles.actionBtn}
+          onClick={() => sendAction(ActionType.REST)}
+          disabled={!nearbyBuildings.tavern}
+          style={{ opacity: nearbyBuildings.tavern ? 1 : 0.5 }}
+        >
           Rest [R]
         </button>
       </div>
