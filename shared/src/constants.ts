@@ -22,16 +22,8 @@ export const GAME_CONFIG = {
   TOWN_SIZE: 200,
   DAY_LENGTH_SECONDS: 600, // 10 minutes = 1 day
 
-  // Interaction
-  INTERACTION_RADIUS: 10, // Distance required to interact with buildings
-};
-
-// World boundaries
-export const WORLD_BOUNDS = {
-  MIN_X: -100,
-  MAX_X: 100,
-  MIN_Z: -100,
-  MAX_Z: 100,
+  // Death and Respawn
+  RESPAWN_DELAY_SECONDS: 5,
 };
 
 // Starting stats

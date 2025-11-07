@@ -1,23 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import {
   connectionStatusAtom,
   localStatsAtom,
   playersArrayAtom,
   playerIdAtom,
-  buildingsAtom,
-  localPositionAtom,
+  isDeadAtom,
 } from '@/stores/gameAtoms';
-import {
-  ActionType,
-  NetworkMessage,
-  MessageType,
-  BuildingType,
-  GAME_CONFIG,
-  distance,
-} from '@my-town/shared';
+import { ActionType, NetworkMessage, MessageType, GAME_CONFIG } from '@my-town/shared';
 import styles from './UI.module.css';
 import Tutorial from './Tutorial';
 
@@ -26,9 +18,9 @@ export default function UI() {
   const localStats = useAtomValue(localStatsAtom);
   const players = useAtomValue(playersArrayAtom);
   const playerId = useAtomValue(playerIdAtom);
-  const buildings = useAtomValue(buildingsAtom);
-  const localPosition = useAtomValue(localPositionAtom);
+  const isDead = useAtomValue(isDeadAtom);
   const wsRef = useRef<WebSocket | null>(null);
+  const [respawnTimer, setRespawnTimer] = useState<number>(0);
 
   // Check if this is the first time the user is playing
   useEffect(() => {
@@ -82,6 +74,27 @@ export default function UI() {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [playerId]);
+
+  // Handle respawn timer countdown
+  useEffect(() => {
+    if (isDead) {
+      setRespawnTimer(GAME_CONFIG.RESPAWN_DELAY_SECONDS);
+
+      const countdown = setInterval(() => {
+        setRespawnTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdown);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(countdown);
+    } else {
+      setRespawnTimer(0);
+    }
+  }, [isDead]);
 
   const getHealthIndicator = (health: number) => {
     if (health > 75) return '💚';
@@ -281,8 +294,15 @@ export default function UI() {
         </div>
       </div>
 
-      {/* Tutorial Overlay */}
-      <Tutorial />
+      {/* Death Screen */}
+      {isDead && (
+        <div className={styles.deathScreen}>
+          <h2>You Died</h2>
+          <p>Your health reached zero!</p>
+          <p>You will respawn soon...</p>
+          <div className={styles.respawnTimer}>{respawnTimer}s</div>
+        </div>
+      )}
     </div>
   );
 }

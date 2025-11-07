@@ -21,6 +21,7 @@ export class GameServer {
   private players: Map<string, PlayerState> = new Map();
   private buildings: BuildingLocation[] = [];
   private gameLoopInterval?: NodeJS.Timeout;
+  private respawnTimers: Map<string, NodeJS.Timeout> = new Map();
 
   constructor(private wss: WebSocketServer) {
     this.initializeWorld();
@@ -76,6 +77,7 @@ export class GameServer {
         rotation: spawnPoint.rotation,
         stats: { ...STARTING_STATS },
         inventory: [],
+        isDead: false,
       };
 
       this.players.set(playerId, player);
@@ -194,7 +196,7 @@ export class GameServer {
 
   private handleAction(playerId: string, action: any) {
     const player = this.players.get(playerId);
-    if (!player) return;
+    if (!player || player.isDead) return;
 
     // Check proximity to relevant building
     let requiredBuildingType: BuildingType | null = null;
@@ -264,6 +266,11 @@ export class GameServer {
   private updateGameState(deltaTime: number) {
     // Update all players' survival stats
     for (const player of this.players.values()) {
+      // Skip stat updates for dead players
+      if (player.isDead) {
+        continue;
+      }
+
       player.stats.hunger = clamp(
         player.stats.hunger - GAME_CONFIG.HUNGER_DECAY_RATE * deltaTime,
         0,
@@ -285,6 +292,11 @@ export class GameServer {
         player.stats.health = clamp(player.stats.health - 1 * deltaTime, 0, 100);
       } else if (player.stats.health < 100) {
         player.stats.health = clamp(player.stats.health + 0.5 * deltaTime, 0, 100);
+      }
+
+      // Check for death
+      if (player.stats.health <= 0 && !player.isDead) {
+        this.handlePlayerDeath(player);
       }
     }
 
@@ -323,10 +335,61 @@ export class GameServer {
     }
   }
 
+  private handlePlayerDeath(player: PlayerState) {
+    player.isDead = true;
+    player.stats.health = 0;
+
+    // Notify all clients of the death
+    this.broadcast({
+      type: MessageType.PLAYER_DEATH,
+      data: {
+        playerId: player.id,
+        playerName: player.name,
+      },
+      timestamp: Date.now(),
+    });
+
+    // Schedule respawn after delay
+    const respawnTimer = setTimeout(() => {
+      this.handlePlayerRespawn(player.id);
+    }, GAME_CONFIG.RESPAWN_DELAY_SECONDS * 1000);
+
+    this.respawnTimers.set(player.id, respawnTimer);
+  }
+
+  private handlePlayerRespawn(playerId: string) {
+    const player = this.players.get(playerId);
+    if (!player) return;
+
+    // Reset player state
+    player.isDead = false;
+    player.stats = { ...STARTING_STATS };
+    player.position = { x: 0, y: 0, z: 0 };
+    player.rotation = 0;
+
+    // Clear the respawn timer
+    this.respawnTimers.delete(playerId);
+
+    // Notify all clients of the respawn
+    this.broadcast({
+      type: MessageType.PLAYER_RESPAWN,
+      data: {
+        playerId: player.id,
+        player: player,
+      },
+      timestamp: Date.now(),
+    });
+  }
+
   public shutdown() {
     if (this.gameLoopInterval) {
       clearInterval(this.gameLoopInterval);
     }
+    // Clear all respawn timers
+    for (const timer of this.respawnTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.respawnTimers.clear();
     this.wss.close();
   }
 }
