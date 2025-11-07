@@ -1,14 +1,20 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import { Vector3 } from 'three';
-import PlayerMovement from './PlayerMovement';
+import { useRef } from 'react';
+import { Group } from 'three';
 import Environment from './Environment';
 import OtherPlayers from './OtherPlayers';
 import Buildings from './Buildings';
+import LocalPlayer from './LocalPlayer';
+import ThirdPersonCamera from './ThirdPersonCamera';
 
-export default function Scene() {
+interface SceneProps {
+  playerName: string;
+}
+
+export default function Scene({ playerName }: SceneProps) {
+  const playerRef = useRef<Group>(null);
+
   return (
     <>
       <color attach="background" args={['#87ceeb']} />
@@ -31,7 +37,8 @@ export default function Scene() {
       <Environment />
       <Buildings />
       <OtherPlayers />
-      <PlayerMovement />
+      <LocalPlayer ref={playerRef} playerName={playerName} />
+      <ThirdPersonCamera targetRef={playerRef} />
     </>
   );
 }

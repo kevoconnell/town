@@ -11,7 +11,6 @@ import {
 } from '@/stores/gameAtoms';
 import { ActionType, NetworkMessage, MessageType, GAME_CONFIG } from '@my-town/shared';
 import styles from './UI.module.css';
-import Tutorial from './Tutorial';
 
 export default function UI() {
   const connectionStatus = useAtomValue(connectionStatusAtom);
@@ -22,13 +21,29 @@ export default function UI() {
   const wsRef = useRef<WebSocket | null>(null);
   const [respawnTimer, setRespawnTimer] = useState<number>(0);
 
-  // Check if this is the first time the user is playing
-  useEffect(() => {
-    const tutorialCompleted = localStorage.getItem('tutorialCompleted');
-    if (!tutorialCompleted) {
-      setShowTutorial(true);
+  const getConnectionStatusClass = () => {
+    return connectionStatus === 'connected' ? styles.connected : styles.disconnected;
+  };
+
+  const getConnectionStatusText = () => {
+    return connectionStatus === 'connected' ? '● Connected' : '○ Disconnected';
+  };
+
+  const getStatIcon = (stat: string) => {
+    switch (stat) {
+      case 'hunger': return '🍖';
+      case 'thirst': return '💧';
+      case 'energy': return '⚡';
+      case 'health': return '❤️';
+      default: return '';
     }
-  }, [setShowTutorial]);
+  };
+
+  const getStatColor = (value: number) => {
+    if (value > 50) return styles.statGood;
+    if (value > 25) return styles.statWarning;
+    return styles.statCritical;
+  };
 
   useEffect(() => {
     // Access the WebSocket from window (we'll set it in NetworkManager)
@@ -103,26 +118,6 @@ export default function UI() {
     return '❤️';
   };
 
-  // Calculate proximity to buildings
-  const nearbyBuildings = useMemo(() => {
-    return {
-      well: buildings.some(
-        (b) =>
-          b.type === BuildingType.WELL &&
-          distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
-      ),
-      farm: buildings.some(
-        (b) =>
-          b.type === BuildingType.FARM &&
-          distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
-      ),
-      tavern: buildings.some(
-        (b) =>
-          b.type === BuildingType.TAVERN &&
-          distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
-      ),
-    };
-  }, [buildings, localPosition]);
 
   return (
     <div className={styles.uiOverlay}>
@@ -218,46 +213,23 @@ export default function UI() {
         </div>
       )}
 
-      {/* Action Prompts */}
-      {nearbyBuildings.well && (
-        <div className={styles.actionPrompt}>
-          Press [E] to Drink Water at Well
-        </div>
-      )}
-      {nearbyBuildings.farm && (
-        <div className={styles.actionPrompt}>
-          Press [F] to Gather Food at Farm
-        </div>
-      )}
-      {nearbyBuildings.tavern && (
-        <div className={styles.actionPrompt}>
-          Press [R] to Rest at Tavern
-        </div>
-      )}
-
       {/* Action Buttons */}
       <div className={styles.actionsPanel}>
         <button
           className={styles.actionBtn}
           onClick={() => sendAction(ActionType.GATHER_WATER)}
-          disabled={!nearbyBuildings.well}
-          style={{ opacity: nearbyBuildings.well ? 1 : 0.5 }}
         >
           Drink Water [E]
         </button>
         <button
           className={styles.actionBtn}
           onClick={() => sendAction(ActionType.GATHER_FOOD)}
-          disabled={!nearbyBuildings.farm}
-          style={{ opacity: nearbyBuildings.farm ? 1 : 0.5 }}
         >
           Eat Food [F]
         </button>
         <button
           className={styles.actionBtn}
           onClick={() => sendAction(ActionType.REST)}
-          disabled={!nearbyBuildings.tavern}
-          style={{ opacity: nearbyBuildings.tavern ? 1 : 0.5 }}
         >
           Rest [R]
         </button>
@@ -268,18 +240,12 @@ export default function UI() {
         <h4>Controls</h4>
         <div>
           <div>WASD - Move</div>
-          <div>Mouse - Look Around</div>
+          <div>Mouse - Drag to Look Around</div>
+          <div>Shift - Run</div>
           <div>E - Drink Water</div>
           <div>F - Eat Food</div>
           <div>R - Rest</div>
-          <div>Click to lock pointer</div>
         </div>
-        <button
-          className={styles.tutorialBtn}
-          onClick={() => setShowTutorial(true)}
-        >
-          Show Tutorial
-        </button>
       </div>
 
       {/* Players List */}

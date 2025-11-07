@@ -10,6 +10,9 @@ export const connectionStatusAtom = atom<ConnectionStatus>('disconnected');
 export const playersAtom = atom<Map<string, PlayerState>>(new Map());
 export const localStatsAtom = atom<SurvivalStats | null>(null);
 export const isDeadAtom = atom<boolean>(false);
+export const localPositionAtom = atom<Vector3>({ x: 0, y: 0, z: 0 });
+export const localRotationAtom = atom<number>(0);
+export const buildingsAtom = atom<BuildingLocation[]>([]);
 
 // Derived atom for players array
 export const playersArrayAtom = atom((get) => {

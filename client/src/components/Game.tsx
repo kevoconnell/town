@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { PointerLockControls } from '@react-three/drei';
 import Scene from './Scene';
 import UI from './UI';
 import NetworkManager from './NetworkManager';
@@ -32,11 +31,10 @@ export default function Game() {
 
       <Canvas
         shadows
-        camera={{ position: [0, 2, 5], fov: 75 }}
+        camera={{ position: [0, 5, 10], fov: 75 }}
         style={{ width: '100vw', height: '100vh' }}
       >
-        <Scene />
-        <PointerLockControls />
+        {playerName && <Scene playerName={playerName} />}
       </Canvas>
 
       <UI />

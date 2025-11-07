@@ -1,11 +1,12 @@
 'use client';
 
-import { WORLD_BOUNDS } from '@my-town/shared';
+import { GAME_CONFIG } from '@my-town/shared';
 
 export default function Environment() {
   const boundaryHeight = 5;
   const boundaryThickness = 0.5;
-  const boundaryWidth = WORLD_BOUNDS.MAX_X - WORLD_BOUNDS.MIN_X;
+  const maxBound = GAME_CONFIG.TOWN_SIZE / 2;
+  const boundaryWidth = maxBound * 2;
 
   return (
     <>
@@ -20,25 +21,25 @@ export default function Environment() {
 
       {/* Boundary Walls */}
       {/* North Wall */}
-      <mesh position={[0, boundaryHeight / 2, WORLD_BOUNDS.MAX_Z]} castShadow>
+      <mesh position={[0, boundaryHeight / 2, maxBound]} castShadow>
         <boxGeometry args={[boundaryWidth, boundaryHeight, boundaryThickness]} />
         <meshStandardMaterial color="#8b4513" roughness={0.9} />
       </mesh>
 
       {/* South Wall */}
-      <mesh position={[0, boundaryHeight / 2, WORLD_BOUNDS.MIN_Z]} castShadow>
+      <mesh position={[0, boundaryHeight / 2, -maxBound]} castShadow>
         <boxGeometry args={[boundaryWidth, boundaryHeight, boundaryThickness]} />
         <meshStandardMaterial color="#8b4513" roughness={0.9} />
       </mesh>
 
       {/* East Wall */}
-      <mesh position={[WORLD_BOUNDS.MAX_X, boundaryHeight / 2, 0]} castShadow>
+      <mesh position={[maxBound, boundaryHeight / 2, 0]} castShadow>
         <boxGeometry args={[boundaryThickness, boundaryHeight, boundaryWidth]} />
         <meshStandardMaterial color="#8b4513" roughness={0.9} />
       </mesh>
 
       {/* West Wall */}
-      <mesh position={[WORLD_BOUNDS.MIN_X, boundaryHeight / 2, 0]} castShadow>
+      <mesh position={[-maxBound, boundaryHeight / 2, 0]} castShadow>
         <boxGeometry args={[boundaryThickness, boundaryHeight, boundaryWidth]} />
         <meshStandardMaterial color="#8b4513" roughness={0.9} />
       </mesh>

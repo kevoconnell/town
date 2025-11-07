@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useThree } from '@react-three/fiber';
-import { useSetAtom } from 'jotai';
+import { useSetAtom, useAtomValue } from 'jotai';
 import {
   playerIdAtom,
   connectionStatusAtom,
@@ -10,6 +9,7 @@ import {
   removePlayerAtom,
   buildingsAtom,
   localPositionAtom,
+  localRotationAtom,
 } from '@/stores/gameAtoms';
 import { NetworkMessage, MessageType, NETWORK_CONFIG } from '@my-town/shared';
 
@@ -21,14 +21,14 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const playerNameRef = useRef(playerName);
-  const { camera } = useThree();
 
   const setPlayerId = useSetAtom(playerIdAtom);
   const setConnectionStatus = useSetAtom(connectionStatusAtom);
   const updatePlayer = useSetAtom(updatePlayerAtom);
   const removePlayer = useSetAtom(removePlayerAtom);
   const setBuildings = useSetAtom(buildingsAtom);
-  const setLocalPosition = useSetAtom(localPositionAtom);
+  const localPosition = useAtomValue(localPositionAtom);
+  const localRotation = useAtomValue(localRotationAtom);
 
   // Update ref when playerName changes
   useEffect(() => {
@@ -50,14 +50,6 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
           console.log('WebSocket connected');
           setConnectionStatus('connected');
           reconnectAttemptsRef.current = 0;
-
-          // Send player name to server
-          const nameMessage: NetworkMessage = {
-            type: MessageType.SET_NAME,
-            data: { name: playerNameRef.current },
-            timestamp: Date.now(),
-          };
-          ws.send(JSON.stringify(nameMessage));
         };
 
         ws.onmessage = (event) => {
@@ -124,18 +116,11 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
     // Send position updates
     const intervalId = setInterval(() => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
-        const position = {
-          x: camera.position.x,
-          y: camera.position.y,
-          z: camera.position.z,
-        };
-        setLocalPosition(position);
-
         const message: NetworkMessage = {
           type: MessageType.PLAYER_UPDATE,
           data: {
-            position,
-            rotation: camera.rotation.y,
+            position: localPosition,
+            rotation: localRotation,
           },
           timestamp: Date.now(),
         };
@@ -149,7 +134,7 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
         wsRef.current.close();
       }
     };
-  }, [camera, setPlayerId, setConnected, updatePlayer, removePlayer, setBuildings, setLocalPosition]);
+  }, [localPosition, localRotation, setPlayerId, setConnectionStatus, updatePlayer, removePlayer, setBuildings]);
 
   return null;
 }
