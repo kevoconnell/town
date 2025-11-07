@@ -27,6 +27,14 @@ export const GAME_CONFIG = {
   RESPAWN_DELAY_SECONDS: 5,
 };
 
+// World boundaries for expanded 1000x1000 world
+export const WORLD_BOUNDS = {
+  MIN_X: -500,
+  MAX_X: 500,
+  MIN_Z: -500,
+  MAX_Z: 500,
+};
+
 // Starting stats
 export const STARTING_STATS = {
   hunger: 100,

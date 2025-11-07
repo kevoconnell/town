@@ -12,6 +12,7 @@ export const localStatsAtom = atom<SurvivalStats | null>(null);
 export const isDeadAtom = atom<boolean>(false);
 export const buildingsAtom = atom<BuildingLocation[]>([]);
 export const localPositionAtom = atom<Vector3>({ x: 0, y: 0, z: 0 });
+export const localRotationAtom = atom<number>(0);
 
 // Derived atom for players array
 export const playersArrayAtom = atom((get) => {
@@ -44,14 +45,6 @@ export const removePlayerAtom = atom(
   }
 );
 
-// Buildings and position atoms
-export const buildingsAtom = atom<BuildingLocation[]>([]);
-export const localPositionAtom = atom<Vector3>({ x: 0, y: 0, z: 0 });
-export const localRotationAtom = atom<number>(0);
-
 // Tutorial state atoms
 export const showTutorialAtom = atom<boolean>(false);
 export const tutorialCompletedAtom = atom<boolean>(false);
-
-// Local player position atom
-export const localPositionAtom = atom<Vector3>({ x: 0, y: 2, z: 5 });
