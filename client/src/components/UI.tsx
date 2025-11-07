@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useAtomValue } from 'jotai';
 import {
-  connectedAtom,
+  connectionStatusAtom,
   localStatsAtom,
   playersArrayAtom,
   playerIdAtom,
@@ -12,7 +12,7 @@ import { ActionType, NetworkMessage, MessageType } from '@my-town/shared';
 import styles from './UI.module.css';
 
 export default function UI() {
-  const connected = useAtomValue(connectedAtom);
+  const connectionStatus = useAtomValue(connectionStatusAtom);
   const localStats = useAtomValue(localStatsAtom);
   const players = useAtomValue(playersArrayAtom);
   const playerId = useAtomValue(playerIdAtom);
@@ -71,11 +71,37 @@ export default function UI() {
   };
 
 
+  const getConnectionStatusClass = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return styles.connected;
+      case 'connecting':
+        return styles.connecting;
+      case 'disconnected':
+        return styles.disconnected;
+      default:
+        return styles.disconnected;
+    }
+  };
+
+  const getConnectionStatusText = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return 'Connected';
+      case 'connecting':
+        return 'Connecting...';
+      case 'disconnected':
+        return 'Disconnected';
+      default:
+        return 'Disconnected';
+    }
+  };
+
   return (
     <div className={styles.uiOverlay}>
       {/* Connection Status */}
-      <div className={`${styles.connectionStatus} ${connected ? styles.connected : styles.disconnected}`}>
-        {connected ? 'Connected' : 'Disconnected'}
+      <div className={`${styles.connectionStatus} ${getConnectionStatusClass()}`}>
+        {getConnectionStatusText()}
       </div>
 
       {/* Stats Panel */}

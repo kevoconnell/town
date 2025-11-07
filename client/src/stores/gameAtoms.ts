@@ -1,9 +1,12 @@
 import { atom } from 'jotai';
 import { SurvivalStats, PlayerState } from '@my-town/shared';
 
+// Connection status type
+export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';
+
 // Basic atoms
 export const playerIdAtom = atom<string | null>(null);
-export const connectedAtom = atom<boolean>(false);
+export const connectionStatusAtom = atom<ConnectionStatus>('disconnected');
 export const playersAtom = atom<Map<string, PlayerState>>(new Map());
 export const localStatsAtom = atom<SurvivalStats | null>(null);
 
