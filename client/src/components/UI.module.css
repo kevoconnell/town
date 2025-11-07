@@ -1,0 +1,160 @@
+.uiOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  color: white;
+  font-size: 14px;
+}
+
+.connectionStatus {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.connected {
+  background: rgba(81, 207, 102, 0.8);
+}
+
+.disconnected {
+  background: rgba(255, 107, 107, 0.8);
+}
+
+.statsPanel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 8px;
+  min-width: 200px;
+}
+
+.statsPanel h3 {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.statBar {
+  margin: 8px 0;
+}
+
+.statLabel {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.bar {
+  width: 100%;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.hunger {
+  background: #ff6b6b;
+}
+
+.thirst {
+  background: #4dabf7;
+}
+
+.energy {
+  background: #ffd43b;
+}
+
+.health {
+  background: #51cf66;
+}
+
+.actionsPanel {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 8px;
+  pointer-events: all;
+  display: flex;
+  gap: 10px;
+}
+
+.actionBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.actionBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.actionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.controlsHelp {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.controlsHelp h4 {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.controlsHelp > div > div {
+  margin: 4px 0;
+}
+
+.playersList {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 8px;
+  max-width: 200px;
+}
+
+.playersList h4 {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.playersContainer {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.playerItem {
+  padding: 4px 0;
+  font-size: 12px;
+}
