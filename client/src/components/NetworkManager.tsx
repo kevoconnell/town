@@ -21,6 +21,8 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const playerNameRef = useRef(playerName);
+  const positionRef = useRef({ x: 0, y: 0, z: 0 });
+  const rotationRef = useRef(0);
 
   const setPlayerId = useSetAtom(playerIdAtom);
   const setConnectionStatus = useSetAtom(connectionStatusAtom);
@@ -29,6 +31,15 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
   const setBuildings = useSetAtom(buildingsAtom);
   const localPosition = useAtomValue(localPositionAtom);
   const localRotation = useAtomValue(localRotationAtom);
+
+  // Update refs when position/rotation changes
+  useEffect(() => {
+    positionRef.current = localPosition;
+  }, [localPosition]);
+
+  useEffect(() => {
+    rotationRef.current = localRotation;
+  }, [localRotation]);
 
   // Update ref when playerName changes
   useEffect(() => {
@@ -119,8 +130,8 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
         const message: NetworkMessage = {
           type: MessageType.PLAYER_UPDATE,
           data: {
-            position: localPosition,
-            rotation: localRotation,
+            position: positionRef.current,
+            rotation: rotationRef.current,
           },
           timestamp: Date.now(),
         };
@@ -134,7 +145,8 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
         wsRef.current.close();
       }
     };
-  }, [localPosition, localRotation, setPlayerId, setConnectionStatus, updatePlayer, removePlayer, setBuildings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   return null;
 }

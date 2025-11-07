@@ -70,11 +70,12 @@ const LocalPlayer = forwardRef<Group, LocalPlayerProps>(({ playerName }, ref) =>
       // Get camera rotation from userData (set by ThirdPersonCamera)
       const cameraRotation = groupRef.current.userData.cameraRotation || 0;
 
-      // Transform direction relative to camera rotation
+      // Transform direction relative to camera orientation
+      // Uses negative rotation formula to convert camera-relative input to world space
       const rotatedDirection = new Vector3(
-        direction.x * Math.cos(cameraRotation) - direction.z * Math.sin(cameraRotation),
+        direction.x * Math.cos(cameraRotation) + direction.z * Math.sin(cameraRotation),
         0,
-        direction.x * Math.sin(cameraRotation) + direction.z * Math.cos(cameraRotation)
+        -direction.x * Math.sin(cameraRotation) + direction.z * Math.cos(cameraRotation)
       );
 
       // Update velocity

@@ -10,9 +10,9 @@ interface ThirdPersonCameraProps {
 }
 
 export default function ThirdPersonCamera({ targetRef }: ThirdPersonCameraProps) {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const cameraRotationRef = useRef({ horizontal: 0, vertical: 0.3 });
-  const isDraggingRef = useRef(false);
+  const isLockedRef = useRef(false);
   const smoothedPositionRef = useRef(new Vector3(0, 5, 10));
   const smoothedLookAtRef = useRef(new Vector3(0, 0, 0));
 
@@ -24,35 +24,39 @@ export default function ThirdPersonCamera({ targetRef }: ThirdPersonCameraProps)
   const cameraSmoothness = 0.1;
 
   useEffect(() => {
-    const handleMouseDown = () => {
-      isDraggingRef.current = true;
+    const canvas = gl.domElement;
+
+    const handleClick = () => {
+      if (!isLockedRef.current) {
+        canvas.requestPointerLock();
+      }
     };
 
-    const handleMouseUp = () => {
-      isDraggingRef.current = false;
+    const handlePointerLockChange = () => {
+      isLockedRef.current = document.pointerLockElement === canvas;
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDraggingRef.current) {
+      if (isLockedRef.current) {
         const sensitivity = 0.003;
         cameraRotationRef.current.horizontal -= e.movementX * sensitivity;
         cameraRotationRef.current.vertical = Math.max(
           minVerticalAngle,
-          Math.min(maxVerticalAngle, cameraRotationRef.current.vertical - e.movementY * sensitivity)
+          Math.min(maxVerticalAngle, cameraRotationRef.current.vertical + e.movementY * sensitivity)
         );
       }
     };
 
-    window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('click', handleClick);
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
     window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('click', handleClick);
+      document.removeEventListener('pointerlockchange', handlePointerLockChange);
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, []);
+  }, [gl]);
 
   useFrame(() => {
     if (!targetRef.current) return;
