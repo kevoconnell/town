@@ -20,15 +20,15 @@
   font-weight: bold;
 }
 
-.connected {
+.statusConnected {
   background: rgba(81, 207, 102, 0.8);
 }
 
-.connecting {
+.statusConnecting {
   background: rgba(255, 212, 59, 0.8);
 }
 
-.disconnected {
+.statusDisconnected {
   background: rgba(255, 107, 107, 0.8);
 }
 
@@ -125,17 +125,22 @@
 }
 
 /* Dynamic color classes based on stat value */
-.statGood {
+.barFillGood {
   background: linear-gradient(90deg, #51cf66, #40c057);
   box-shadow: 0 0 10px rgba(81, 207, 102, 0.5);
 }
 
-.statWarning {
+.barFillMedium {
   background: linear-gradient(90deg, #ffd43b, #fcc419);
   box-shadow: 0 0 10px rgba(255, 212, 59, 0.5);
 }
 
-.statCritical {
+.barFillLow {
+  background: linear-gradient(90deg, #ff9966, #ff7733);
+  box-shadow: 0 0 10px rgba(255, 119, 51, 0.5);
+}
+
+.barFillCritical {
   background: linear-gradient(90deg, #ff6b6b, #fa5252);
   box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
   animation: barPulse 1s ease-in-out infinite;

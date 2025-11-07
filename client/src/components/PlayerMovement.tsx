@@ -3,9 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Vector3 } from 'three';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { GAME_CONFIG } from '@my-town/shared';
-import { playerIdAtom } from '@/stores/gameAtoms';
+import { playerIdAtom, localPositionAtom } from '@/stores/gameAtoms';
 
 export default function PlayerMovement() {
   const { camera } = useThree();
@@ -14,6 +14,7 @@ export default function PlayerMovement() {
   const directionRef = useRef(new Vector3());
 
   const playerId = useAtomValue(playerIdAtom);
+  const setLocalPosition = useSetAtom(localPositionAtom);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -76,6 +77,13 @@ export default function PlayerMovement() {
       camera.position.x = Math.max(-maxBound, Math.min(maxBound, camera.position.x));
       camera.position.z = Math.max(-maxBound, Math.min(maxBound, camera.position.z));
     }
+
+    // Update local position atom for minimap
+    setLocalPosition({
+      x: camera.position.x,
+      y: camera.position.y,
+      z: camera.position.z,
+    });
   });
 
   return null;
