@@ -7,11 +7,13 @@ import {
   BuildingLocation,
   BuildingType,
   GAME_CONFIG,
+  NETWORK_CONFIG,
   STARTING_STATS,
   WORLD_BOUNDS,
   generateId,
   clamp,
   ActionType,
+  generateSpawnPosition,
 } from '@my-town/shared';
 
 export class GameServer {
@@ -63,12 +65,15 @@ export class GameServer {
       const playerId = generateId();
       this.clients.set(ws, playerId);
 
+      // Generate random spawn position
+      const spawnPoint = generateSpawnPosition(this.buildings);
+
       // Create new player
       const player: PlayerState = {
         id: playerId,
         name: `Player ${this.players.size + 1}`,
-        position: { x: 0, y: 0, z: 0 },
-        rotation: 0,
+        position: spawnPoint.position,
+        rotation: spawnPoint.rotation,
         stats: { ...STARTING_STATS },
         inventory: [],
       };
@@ -200,7 +205,7 @@ export class GameServer {
   }
 
   private startGameLoop() {
-    const tickRate = 1000 / GAME_CONFIG.TICK_RATE;
+    const tickRate = 1000 / NETWORK_CONFIG.TICK_RATE;
 
     this.gameLoopInterval = setInterval(() => {
       this.updateGameState(tickRate / 1000);
