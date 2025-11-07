@@ -134,6 +134,25 @@ export class GameServer {
     if (!player) return;
 
     switch (message.type) {
+      case MessageType.SET_NAME:
+        // Update player name
+        if (message.data.name && typeof message.data.name === 'string') {
+          const trimmedName = message.data.name.trim();
+          // Validate name length and characters
+          if (trimmedName.length >= 2 && trimmedName.length <= 20 && /^[a-zA-Z0-9\s\-_]+$/.test(trimmedName)) {
+            player.name = trimmedName;
+            console.log(`Player ${playerId} set name to: ${trimmedName}`);
+
+            // Broadcast updated player to all clients
+            this.broadcast({
+              type: MessageType.PLAYER_UPDATE,
+              data: player,
+              timestamp: Date.now(),
+            });
+          }
+        }
+        break;
+
       case MessageType.PLAYER_UPDATE:
         // Update player position and rotation
         if (message.data.position) {

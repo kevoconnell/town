@@ -59,6 +59,7 @@ export enum MessageType {
   GAME_STATE = 'game_state',
   ACTION = 'action',
   CHAT = 'chat',
+  SET_NAME = 'set_name',
 }
 
 export interface NetworkMessage {

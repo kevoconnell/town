@@ -1,14 +1,35 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { PointerLockControls } from '@react-three/drei';
 import Scene from './Scene';
 import UI from './UI';
 import NetworkManager from './NetworkManager';
+import NameInput from './NameInput';
 
 export default function Game() {
+  const [playerName, setPlayerName] = useState<string | null>(null);
+  const [showNameInput, setShowNameInput] = useState(true);
+
+  useEffect(() => {
+    // Check if player already has a saved name
+    const savedName = localStorage.getItem('playerName');
+    if (savedName) {
+      setPlayerName(savedName);
+      setShowNameInput(false);
+    }
+  }, []);
+
+  const handleNameSubmit = (name: string) => {
+    setPlayerName(name);
+    setShowNameInput(false);
+  };
+
   return (
     <>
+      {showNameInput && <NameInput onNameSubmit={handleNameSubmit} />}
+
       <Canvas
         shadows
         camera={{ position: [0, 2, 5], fov: 75 }}
@@ -19,7 +40,7 @@ export default function Game() {
       </Canvas>
 
       <UI />
-      <NetworkManager />
+      {playerName && <NetworkManager playerName={playerName} />}
     </>
   );
 }
