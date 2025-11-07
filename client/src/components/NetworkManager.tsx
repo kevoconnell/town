@@ -149,7 +149,7 @@ export default function NetworkManager({ playerName }: NetworkManagerProps) {
         wsRef.current.close();
       }
     };
-  }, [camera, setPlayerId, setConnected, updatePlayer, removePlayer, setBuildings, setLocalPosition]);
+  }, [camera, setPlayerId, setConnectionStatus, updatePlayer, removePlayer, setBuildings, setLocalPosition]);
 
   return null;
 }

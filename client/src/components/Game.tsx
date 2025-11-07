@@ -37,10 +37,10 @@ export default function Game() {
       >
         <Scene />
         <PointerLockControls />
+        {playerName && <NetworkManager playerName={playerName} />}
       </Canvas>
 
       <UI />
-      {playerName && <NetworkManager playerName={playerName} />}
     </>
   );
 }

@@ -21,6 +21,7 @@ export const GAME_CONFIG = {
   // World
   TOWN_SIZE: 200,
   DAY_LENGTH_SECONDS: 600, // 10 minutes = 1 day
+  INTERACTION_RADIUS: 10, // Distance at which players can interact with buildings
 
   // Death and Respawn
   RESPAWN_DELAY_SECONDS: 5,
@@ -32,6 +33,14 @@ export const STARTING_STATS = {
   thirst: 100,
   energy: 100,
   health: 100,
+};
+
+// World bounds
+export const WORLD_BOUNDS = {
+  MIN_X: -100,
+  MAX_X: 100,
+  MIN_Z: -100,
+  MAX_Z: 100,
 };
 
 // Network
