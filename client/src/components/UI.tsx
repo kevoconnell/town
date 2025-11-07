@@ -1,17 +1,77 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useAtomValue } from 'jotai';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
   connectionStatusAtom,
   localStatsAtom,
   playersArrayAtom,
   playerIdAtom,
   isDeadAtom,
+  showTutorialAtom,
+  localPositionAtom,
 } from '@/stores/gameAtoms';
-import { ActionType, NetworkMessage, MessageType, GAME_CONFIG } from '@my-town/shared';
+import { ActionType, NetworkMessage, MessageType, GAME_CONFIG, BuildingType, Vector3 } from '@my-town/shared';
 import styles from './UI.module.css';
 import Tutorial from './Tutorial';
+
+// Building positions (same as in Buildings.tsx)
+const BUILDINGS = [
+  {
+    id: 'well-1',
+    type: BuildingType.WELL,
+    position: { x: -20, y: 0, z: -20 },
+    name: 'Town Well',
+  },
+  {
+    id: 'market-1',
+    type: BuildingType.MARKET,
+    position: { x: 30, y: 0, z: -10 },
+    name: 'Market Square',
+  },
+  {
+    id: 'farm-1',
+    type: BuildingType.FARM,
+    position: { x: -40, y: 0, z: 30 },
+    name: 'Community Farm',
+  },
+  {
+    id: 'tavern-1',
+    type: BuildingType.TAVERN,
+    position: { x: 0, y: 0, z: 0 },
+    name: 'The Rusty Tankard',
+  },
+];
+
+// Helper function to calculate distance
+function distance(pos1: Vector3, pos2: Vector3): number {
+  const dx = pos1.x - pos2.x;
+  const dz = pos1.z - pos2.z;
+  return Math.sqrt(dx * dx + dz * dz);
+}
+
+// Helper functions for UI
+function getStatIcon(stat: string): string {
+  switch (stat) {
+    case 'hunger':
+      return '🍖';
+    case 'thirst':
+      return '💧';
+    case 'energy':
+      return '⚡';
+    case 'health':
+      return '❤️';
+    default:
+      return '';
+  }
+}
+
+function getStatColor(value: number): string {
+  if (value > 75) return styles.barFillGood;
+  if (value > 50) return styles.barFillMedium;
+  if (value > 25) return styles.barFillLow;
+  return styles.barFillCritical;
+}
 
 export default function UI() {
   const connectionStatus = useAtomValue(connectionStatusAtom);
@@ -19,8 +79,37 @@ export default function UI() {
   const players = useAtomValue(playersArrayAtom);
   const playerId = useAtomValue(playerIdAtom);
   const isDead = useAtomValue(isDeadAtom);
+  const localPosition = useAtomValue(localPositionAtom);
+  const setShowTutorial = useSetAtom(showTutorialAtom);
   const wsRef = useRef<WebSocket | null>(null);
   const [respawnTimer, setRespawnTimer] = useState<number>(0);
+
+  // Helper functions for connection status
+  const getConnectionStatusClass = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return styles.statusConnected;
+      case 'connecting':
+        return styles.statusConnecting;
+      case 'disconnected':
+        return styles.statusDisconnected;
+      default:
+        return '';
+    }
+  };
+
+  const getConnectionStatusText = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return 'Connected';
+      case 'connecting':
+        return 'Connecting...';
+      case 'disconnected':
+        return 'Disconnected';
+      default:
+        return '';
+    }
+  };
 
   // Check if this is the first time the user is playing
   useEffect(() => {
@@ -106,23 +195,23 @@ export default function UI() {
   // Calculate proximity to buildings
   const nearbyBuildings = useMemo(() => {
     return {
-      well: buildings.some(
+      well: BUILDINGS.some(
         (b) =>
           b.type === BuildingType.WELL &&
           distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
       ),
-      farm: buildings.some(
+      farm: BUILDINGS.some(
         (b) =>
           b.type === BuildingType.FARM &&
           distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
       ),
-      tavern: buildings.some(
+      tavern: BUILDINGS.some(
         (b) =>
           b.type === BuildingType.TAVERN &&
           distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
       ),
     };
-  }, [buildings, localPosition]);
+  }, [localPosition]);
 
   return (
     <div className={styles.uiOverlay}>

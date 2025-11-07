@@ -7,6 +7,7 @@ import Scene from './Scene';
 import UI from './UI';
 import NetworkManager from './NetworkManager';
 import NameInput from './NameInput';
+import Minimap from './Minimap';
 
 export default function Game() {
   const [playerName, setPlayerName] = useState<string | null>(null);
@@ -40,6 +41,7 @@ export default function Game() {
       </Canvas>
 
       <UI />
+      <Minimap />
       {playerName && <NetworkManager playerName={playerName} />}
     </>
   );

@@ -45,3 +45,6 @@ export const removePlayerAtom = atom(
 // Tutorial state atoms
 export const showTutorialAtom = atom<boolean>(false);
 export const tutorialCompletedAtom = atom<boolean>(false);
+
+// Local player position atom
+export const localPositionAtom = atom<Vector3>({ x: 0, y: 2, z: 5 });
