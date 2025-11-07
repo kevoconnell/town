@@ -36,3 +36,7 @@ export const removePlayerAtom = atom(
     set(playersAtom, players);
   }
 );
+
+// Tutorial state atoms
+export const showTutorialAtom = atom<boolean>(false);
+export const tutorialCompletedAtom = atom<boolean>(false);

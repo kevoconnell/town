@@ -134,6 +134,25 @@
   margin: 4px 0;
 }
 
+.tutorialBtn {
+  margin-top: 12px;
+  background: rgba(81, 207, 102, 0.2);
+  border: 1px solid rgba(81, 207, 102, 0.5);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  width: 100%;
+  pointer-events: all;
+}
+
+.tutorialBtn:hover {
+  background: rgba(81, 207, 102, 0.3);
+  transform: translateY(-2px);
+}
+
 .playersList {
   position: absolute;
   bottom: 20px;
