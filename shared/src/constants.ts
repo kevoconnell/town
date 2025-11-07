@@ -34,6 +34,17 @@ export const STARTING_STATS = {
   health: 100,
 };
 
+// World Boundaries
+export const WORLD_BOUNDS = {
+  MIN_X: -100,
+  MAX_X: 100,
+  MIN_Z: -100,
+  MAX_Z: 100,
+};
+
+// Interaction
+export const INTERACTION_RADIUS = 8;
+
 // Network
 export const NETWORK_CONFIG = {
   SERVER_PORT: 3000,
