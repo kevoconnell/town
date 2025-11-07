@@ -62,6 +62,7 @@ export enum MessageType {
   CHAT = 'chat',
   PLAYER_DEATH = 'player_death',
   PLAYER_RESPAWN = 'player_respawn',
+  SET_NAME = 'set_name',
 }
 
 export interface NetworkMessage {

@@ -12,7 +12,8 @@ export default function Scene() {
   return (
     <>
       <color attach="background" args={['#87ceeb']} />
-      <fog attach="fog" args={['#87ceeb', 50, 300]} />
+      {/* Fog set far out to create infinite world feeling like Minecraft */}
+      <fog attach="fog" args={['#87ceeb', 200, 800]} />
 
       {/* Lighting */}
       <ambientLight intensity={0.6} />
@@ -20,10 +21,10 @@ export default function Scene() {
         position={[50, 100, 50]}
         intensity={0.8}
         castShadow
-        shadow-camera-left={-100}
-        shadow-camera-right={100}
-        shadow-camera-top={100}
-        shadow-camera-bottom={-100}
+        shadow-camera-left={-200}
+        shadow-camera-right={200}
+        shadow-camera-top={200}
+        shadow-camera-bottom={-200}
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
       />

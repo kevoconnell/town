@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
   connectionStatusAtom,
   localStatsAtom,
   playersArrayAtom,
   playerIdAtom,
   isDeadAtom,
+  showTutorialAtom,
 } from '@/stores/gameAtoms';
 import { ActionType, NetworkMessage, MessageType, GAME_CONFIG } from '@my-town/shared';
 import styles from './UI.module.css';
@@ -19,6 +20,7 @@ export default function UI() {
   const players = useAtomValue(playersArrayAtom);
   const playerId = useAtomValue(playerIdAtom);
   const isDead = useAtomValue(isDeadAtom);
+  const setShowTutorial = useSetAtom(showTutorialAtom);
   const wsRef = useRef<WebSocket | null>(null);
   const [respawnTimer, setRespawnTimer] = useState<number>(0);
 

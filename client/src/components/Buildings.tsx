@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { BuildingLocation, BuildingType } from '@my-town/shared';
-import { Text } from '@react-three/drei';
+import { Text, Detailed } from '@react-three/drei';
 
 const BUILDING_COLORS: Record<BuildingType, string> = {
   [BuildingType.WELL]: '#4a5568',
@@ -42,7 +42,8 @@ const DEFAULT_BUILDINGS: BuildingLocation[] = [
 function Building({ building }: { building: BuildingLocation }) {
   const meshRef = useRef<THREE.Mesh>(null);
 
-  const getBuildingGeometry = () => {
+  // High detail geometry (0-100 units)
+  const getHighDetailGeometry = () => {
     switch (building.type) {
       case BuildingType.WELL:
         return <cylinderGeometry args={[2, 2, 3, 16]} />;
@@ -57,24 +58,72 @@ function Building({ building }: { building: BuildingLocation }) {
     }
   };
 
+  // Medium detail geometry (100-300 units) - simplified
+  const getMediumDetailGeometry = () => {
+    switch (building.type) {
+      case BuildingType.WELL:
+        return <cylinderGeometry args={[2, 2, 3, 8]} />; // Fewer segments
+      case BuildingType.MARKET:
+        return <boxGeometry args={[8, 4, 8]} />;
+      case BuildingType.FARM:
+        return <boxGeometry args={[10, 3, 6]} />;
+      case BuildingType.TAVERN:
+        return <boxGeometry args={[6, 5, 6]} />;
+      default:
+        return <boxGeometry args={[5, 4, 5]} />;
+    }
+  };
+
+  // Low detail geometry (300+ units) - very simple
+  const getLowDetailGeometry = () => {
+    return <boxGeometry args={[6, 4, 6]} />; // All buildings become simple boxes
+  };
+
   return (
     <group position={[building.position.x, building.position.y, building.position.z]}>
-      <mesh ref={meshRef} position={[0, 2, 0]} castShadow receiveShadow>
-        {getBuildingGeometry()}
-        <meshStandardMaterial color={BUILDING_COLORS[building.type]} />
-      </mesh>
+      <Detailed distances={[0, 100, 300]}>
+        {/* High detail (close) */}
+        <group>
+          <mesh ref={meshRef} position={[0, 2, 0]} castShadow receiveShadow>
+            {getHighDetailGeometry()}
+            <meshStandardMaterial color={BUILDING_COLORS[building.type]} />
+          </mesh>
+          <Text
+            position={[0, 6, 0]}
+            fontSize={0.8}
+            color="white"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.05}
+            outlineColor="#000000"
+          >
+            {building.name}
+          </Text>
+        </group>
 
-      <Text
-        position={[0, 6, 0]}
-        fontSize={0.8}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.05}
-        outlineColor="#000000"
-      >
-        {building.name}
-      </Text>
+        {/* Medium detail */}
+        <group>
+          <mesh position={[0, 2, 0]} castShadow receiveShadow>
+            {getMediumDetailGeometry()}
+            <meshStandardMaterial color={BUILDING_COLORS[building.type]} />
+          </mesh>
+          <Text
+            position={[0, 6, 0]}
+            fontSize={0.6}
+            color="white"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {building.name}
+          </Text>
+        </group>
+
+        {/* Low detail (far) - no text */}
+        <mesh position={[0, 2, 0]} receiveShadow>
+          {getLowDetailGeometry()}
+          <meshStandardMaterial color={BUILDING_COLORS[building.type]} />
+        </mesh>
+      </Detailed>
     </group>
   );
 }
