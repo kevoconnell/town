@@ -70,6 +70,24 @@ export default function UI() {
     return '❤️';
   };
 
+  // Get stat color based on value
+  const getStatColor = (value: number): string => {
+    if (value > 60) return styles.statGood;
+    if (value > 20) return styles.statWarning;
+    return styles.statCritical;
+  };
+
+  // Get stat icon
+  const getStatIcon = (statType: string): string => {
+    switch (statType) {
+      case 'hunger': return '🍖';
+      case 'thirst': return '💧';
+      case 'energy': return '⚡';
+      case 'health': return '❤️';
+      default: return '';
+    }
+  };
+
 
   const getConnectionStatusClass = () => {
     switch (connectionStatus) {
@@ -108,41 +126,85 @@ export default function UI() {
       {localStats && (
         <div className={styles.statsPanel}>
           <h3>Survival Stats</h3>
-          <div className={styles.statBar}>
-            <div className={styles.statLabel}>Hunger</div>
+
+          {/* Hunger */}
+          <div className={`${styles.statBar} ${localStats.hunger < 20 ? styles.statBarCritical : ''}`}>
+            <div className={styles.statHeader}>
+              <div className={styles.statLabel}>
+                <span className={styles.statIcon}>{getStatIcon('hunger')}</span>
+                Hunger
+              </div>
+              <div className={styles.statValue}>{Math.round(localStats.hunger)}%</div>
+            </div>
             <div className={styles.bar}>
               <div
-                className={`${styles.barFill} ${styles.hunger}`}
+                className={`${styles.barFill} ${getStatColor(localStats.hunger)}`}
                 style={{ width: `${Math.max(0, localStats.hunger)}%` }}
               />
             </div>
+            {localStats.hunger < 20 && (
+              <div className={styles.criticalWarning}>⚠️ Critical!</div>
+            )}
           </div>
-          <div className={styles.statBar}>
-            <div className={styles.statLabel}>Thirst</div>
+
+          {/* Thirst */}
+          <div className={`${styles.statBar} ${localStats.thirst < 20 ? styles.statBarCritical : ''}`}>
+            <div className={styles.statHeader}>
+              <div className={styles.statLabel}>
+                <span className={styles.statIcon}>{getStatIcon('thirst')}</span>
+                Thirst
+              </div>
+              <div className={styles.statValue}>{Math.round(localStats.thirst)}%</div>
+            </div>
             <div className={styles.bar}>
               <div
-                className={`${styles.barFill} ${styles.thirst}`}
+                className={`${styles.barFill} ${getStatColor(localStats.thirst)}`}
                 style={{ width: `${Math.max(0, localStats.thirst)}%` }}
               />
             </div>
+            {localStats.thirst < 20 && (
+              <div className={styles.criticalWarning}>⚠️ Critical!</div>
+            )}
           </div>
-          <div className={styles.statBar}>
-            <div className={styles.statLabel}>Energy</div>
+
+          {/* Energy */}
+          <div className={`${styles.statBar} ${localStats.energy < 20 ? styles.statBarCritical : ''}`}>
+            <div className={styles.statHeader}>
+              <div className={styles.statLabel}>
+                <span className={styles.statIcon}>{getStatIcon('energy')}</span>
+                Energy
+              </div>
+              <div className={styles.statValue}>{Math.round(localStats.energy)}%</div>
+            </div>
             <div className={styles.bar}>
               <div
-                className={`${styles.barFill} ${styles.energy}`}
+                className={`${styles.barFill} ${getStatColor(localStats.energy)}`}
                 style={{ width: `${Math.max(0, localStats.energy)}%` }}
               />
             </div>
+            {localStats.energy < 20 && (
+              <div className={styles.criticalWarning}>⚠️ Critical!</div>
+            )}
           </div>
-          <div className={styles.statBar}>
-            <div className={styles.statLabel}>Health</div>
+
+          {/* Health */}
+          <div className={`${styles.statBar} ${localStats.health < 20 ? styles.statBarCritical : ''}`}>
+            <div className={styles.statHeader}>
+              <div className={styles.statLabel}>
+                <span className={styles.statIcon}>{getStatIcon('health')}</span>
+                Health
+              </div>
+              <div className={styles.statValue}>{Math.round(localStats.health)}%</div>
+            </div>
             <div className={styles.bar}>
               <div
-                className={`${styles.barFill} ${styles.health}`}
+                className={`${styles.barFill} ${getStatColor(localStats.health)}`}
                 style={{ width: `${Math.max(0, localStats.health)}%` }}
               />
             </div>
+            {localStats.health < 20 && (
+              <div className={styles.criticalWarning}>⚠️ Critical!</div>
+            )}
           </div>
         </div>
       )}
