@@ -7,10 +7,12 @@ import {
   BuildingLocation,
   BuildingType,
   GAME_CONFIG,
+  NETWORK_CONFIG,
   STARTING_STATS,
   generateId,
   clamp,
   ActionType,
+  distance,
 } from '@my-town/shared';
 
 export class GameServer {
@@ -166,6 +168,36 @@ export class GameServer {
     const player = this.players.get(playerId);
     if (!player) return;
 
+    // Check proximity to relevant building
+    let requiredBuildingType: BuildingType | null = null;
+
+    switch (action.type) {
+      case ActionType.GATHER_WATER:
+        requiredBuildingType = BuildingType.WELL;
+        break;
+      case ActionType.GATHER_FOOD:
+        requiredBuildingType = BuildingType.FARM;
+        break;
+      case ActionType.REST:
+        requiredBuildingType = BuildingType.TAVERN;
+        break;
+    }
+
+    // Validate proximity if action requires a building
+    if (requiredBuildingType) {
+      const nearbyBuilding = this.buildings.find(
+        (building) =>
+          building.type === requiredBuildingType &&
+          distance(player.position, building.position) <= GAME_CONFIG.INTERACTION_RADIUS
+      );
+
+      if (!nearbyBuilding) {
+        console.log(`Player ${playerId} too far from ${requiredBuildingType} to perform action`);
+        return; // Player is not close enough to the required building
+      }
+    }
+
+    // Perform the action if proximity check passed
     switch (action.type) {
       case ActionType.GATHER_WATER:
         if (player.stats.energy >= GAME_CONFIG.GATHER_ENERGY_COST) {
@@ -194,7 +226,7 @@ export class GameServer {
   }
 
   private startGameLoop() {
-    const tickRate = 1000 / GAME_CONFIG.TICK_RATE;
+    const tickRate = 1000 / NETWORK_CONFIG.TICK_RATE;
 
     this.gameLoopInterval = setInterval(() => {
       this.updateGameState(tickRate / 1000);
