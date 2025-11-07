@@ -56,6 +56,7 @@ export interface GameAction {
 export enum MessageType {
   CONNECT = 'connect',
   DISCONNECT = 'disconnect',
+  SET_NAME = 'set_name',
   PLAYER_UPDATE = 'player_update',
   GAME_STATE = 'game_state',
   ACTION = 'action',

@@ -14,6 +14,7 @@ import {
   clamp,
   ActionType,
   distance,
+  generateSpawnPosition,
 } from '@my-town/shared';
 
 export class GameServer {

@@ -1,16 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { useAtomValue } from 'jotai';
+import { useEffect, useRef, useState, useMemo } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
   connectionStatusAtom,
   localStatsAtom,
   playersArrayAtom,
   playerIdAtom,
   isDeadAtom,
-} from '@/stores/gameAtoms';
-import { ActionType, NetworkMessage, MessageType, GAME_CONFIG } from '@my-town/shared';
-import styles from './UI.module.css';
+  showTutorialAtom,
+  buildingsAtom,
+  localPositionAtom,
+} from "@/stores/gameAtoms";
+import {
+  ActionType,
+  NetworkMessage,
+  MessageType,
+  GAME_CONFIG,
+  BuildingType,
+  distance,
+} from "@my-town/shared";
+import styles from "./UI.module.css";
+import Tutorial from "./Tutorial";
 
 export default function UI() {
   const connectionStatus = useAtomValue(connectionStatusAtom);
@@ -18,32 +29,19 @@ export default function UI() {
   const players = useAtomValue(playersArrayAtom);
   const playerId = useAtomValue(playerIdAtom);
   const isDead = useAtomValue(isDeadAtom);
+  const buildings = useAtomValue(buildingsAtom);
+  const localPosition = useAtomValue(localPositionAtom);
+  const setShowTutorial = useSetAtom(showTutorialAtom);
   const wsRef = useRef<WebSocket | null>(null);
   const [respawnTimer, setRespawnTimer] = useState<number>(0);
 
-  const getConnectionStatusClass = () => {
-    return connectionStatus === 'connected' ? styles.connected : styles.disconnected;
-  };
-
-  const getConnectionStatusText = () => {
-    return connectionStatus === 'connected' ? '● Connected' : '○ Disconnected';
-  };
-
-  const getStatIcon = (stat: string) => {
-    switch (stat) {
-      case 'hunger': return '🍖';
-      case 'thirst': return '💧';
-      case 'energy': return '⚡';
-      case 'health': return '❤️';
-      default: return '';
+  // Check if this is the first time the user is playing
+  useEffect(() => {
+    const tutorialCompleted = localStorage.getItem("tutorialCompleted");
+    if (!tutorialCompleted) {
+      setShowTutorial(true);
     }
-  };
-
-  const getStatColor = (value: number) => {
-    if (value > 50) return styles.statGood;
-    if (value > 25) return styles.statWarning;
-    return styles.statCritical;
-  };
+  }, [setShowTutorial]);
 
   useEffect(() => {
     // Access the WebSocket from window (we'll set it in NetworkManager)
@@ -73,21 +71,21 @@ export default function UI() {
 
   const handleKeyPress = (e: KeyboardEvent) => {
     switch (e.key.toLowerCase()) {
-      case 'e':
+      case "e":
         sendAction(ActionType.GATHER_WATER);
         break;
-      case 'f':
+      case "f":
         sendAction(ActionType.GATHER_FOOD);
         break;
-      case 'r':
+      case "r":
         sendAction(ActionType.REST);
         break;
     }
   };
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, [playerId]);
 
   // Handle respawn timer countdown
@@ -112,17 +110,87 @@ export default function UI() {
   }, [isDead]);
 
   const getHealthIndicator = (health: number) => {
-    if (health > 75) return '💚';
-    if (health > 50) return '💛';
-    if (health > 25) return '🧡';
-    return '❤️';
+    if (health > 75) return "💚";
+    if (health > 50) return "💛";
+    if (health > 25) return "🧡";
+    return "❤️";
   };
 
+  const getConnectionStatusClass = () => {
+    switch (connectionStatus) {
+      case "connected":
+        return styles.connected;
+      case "connecting":
+        return styles.connecting;
+      case "disconnected":
+        return styles.disconnected;
+      default:
+        return "";
+    }
+  };
+
+  const getConnectionStatusText = () => {
+    switch (connectionStatus) {
+      case "connected":
+        return "Connected";
+      case "connecting":
+        return "Connecting...";
+      case "disconnected":
+        return "Disconnected";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const getStatIcon = (stat: string) => {
+    switch (stat) {
+      case "hunger":
+        return "🍖";
+      case "thirst":
+        return "💧";
+      case "energy":
+        return "⚡";
+      case "health":
+        return "❤️";
+      default:
+        return "";
+    }
+  };
+
+  const getStatColor = (value: number) => {
+    if (value > 75) return styles.statGood;
+    if (value > 50) return styles.statOk;
+    if (value > 25) return styles.statLow;
+    return styles.statCritical;
+  };
+
+  // Calculate proximity to buildings
+  const nearbyBuildings = useMemo(() => {
+    return {
+      well: buildings.some(
+        (b) =>
+          b.type === BuildingType.WELL &&
+          distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
+      ),
+      farm: buildings.some(
+        (b) =>
+          b.type === BuildingType.FARM &&
+          distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
+      ),
+      tavern: buildings.some(
+        (b) =>
+          b.type === BuildingType.TAVERN &&
+          distance(localPosition, b.position) <= GAME_CONFIG.INTERACTION_RADIUS
+      ),
+    };
+  }, [buildings, localPosition]);
 
   return (
     <div className={styles.uiOverlay}>
       {/* Connection Status */}
-      <div className={`${styles.connectionStatus} ${getConnectionStatusClass()}`}>
+      <div
+        className={`${styles.connectionStatus} ${getConnectionStatusClass()}`}
+      >
         {getConnectionStatusText()}
       </div>
 
@@ -132,17 +200,25 @@ export default function UI() {
           <h3>Survival Stats</h3>
 
           {/* Hunger */}
-          <div className={`${styles.statBar} ${localStats.hunger < 20 ? styles.statBarCritical : ''}`}>
+          <div
+            className={`${styles.statBar} ${
+              localStats.hunger < 20 ? styles.statBarCritical : ""
+            }`}
+          >
             <div className={styles.statHeader}>
               <div className={styles.statLabel}>
-                <span className={styles.statIcon}>{getStatIcon('hunger')}</span>
+                <span className={styles.statIcon}>{getStatIcon("hunger")}</span>
                 Hunger
               </div>
-              <div className={styles.statValue}>{Math.round(localStats.hunger)}%</div>
+              <div className={styles.statValue}>
+                {Math.round(localStats.hunger)}%
+              </div>
             </div>
             <div className={styles.bar}>
               <div
-                className={`${styles.barFill} ${getStatColor(localStats.hunger)}`}
+                className={`${styles.barFill} ${getStatColor(
+                  localStats.hunger
+                )}`}
                 style={{ width: `${Math.max(0, localStats.hunger)}%` }}
               />
             </div>
@@ -152,17 +228,25 @@ export default function UI() {
           </div>
 
           {/* Thirst */}
-          <div className={`${styles.statBar} ${localStats.thirst < 20 ? styles.statBarCritical : ''}`}>
+          <div
+            className={`${styles.statBar} ${
+              localStats.thirst < 20 ? styles.statBarCritical : ""
+            }`}
+          >
             <div className={styles.statHeader}>
               <div className={styles.statLabel}>
-                <span className={styles.statIcon}>{getStatIcon('thirst')}</span>
+                <span className={styles.statIcon}>{getStatIcon("thirst")}</span>
                 Thirst
               </div>
-              <div className={styles.statValue}>{Math.round(localStats.thirst)}%</div>
+              <div className={styles.statValue}>
+                {Math.round(localStats.thirst)}%
+              </div>
             </div>
             <div className={styles.bar}>
               <div
-                className={`${styles.barFill} ${getStatColor(localStats.thirst)}`}
+                className={`${styles.barFill} ${getStatColor(
+                  localStats.thirst
+                )}`}
                 style={{ width: `${Math.max(0, localStats.thirst)}%` }}
               />
             </div>
@@ -172,17 +256,25 @@ export default function UI() {
           </div>
 
           {/* Energy */}
-          <div className={`${styles.statBar} ${localStats.energy < 20 ? styles.statBarCritical : ''}`}>
+          <div
+            className={`${styles.statBar} ${
+              localStats.energy < 20 ? styles.statBarCritical : ""
+            }`}
+          >
             <div className={styles.statHeader}>
               <div className={styles.statLabel}>
-                <span className={styles.statIcon}>{getStatIcon('energy')}</span>
+                <span className={styles.statIcon}>{getStatIcon("energy")}</span>
                 Energy
               </div>
-              <div className={styles.statValue}>{Math.round(localStats.energy)}%</div>
+              <div className={styles.statValue}>
+                {Math.round(localStats.energy)}%
+              </div>
             </div>
             <div className={styles.bar}>
               <div
-                className={`${styles.barFill} ${getStatColor(localStats.energy)}`}
+                className={`${styles.barFill} ${getStatColor(
+                  localStats.energy
+                )}`}
                 style={{ width: `${Math.max(0, localStats.energy)}%` }}
               />
             </div>
@@ -192,17 +284,25 @@ export default function UI() {
           </div>
 
           {/* Health */}
-          <div className={`${styles.statBar} ${localStats.health < 20 ? styles.statBarCritical : ''}`}>
+          <div
+            className={`${styles.statBar} ${
+              localStats.health < 20 ? styles.statBarCritical : ""
+            }`}
+          >
             <div className={styles.statHeader}>
               <div className={styles.statLabel}>
-                <span className={styles.statIcon}>{getStatIcon('health')}</span>
+                <span className={styles.statIcon}>{getStatIcon("health")}</span>
                 Health
               </div>
-              <div className={styles.statValue}>{Math.round(localStats.health)}%</div>
+              <div className={styles.statValue}>
+                {Math.round(localStats.health)}%
+              </div>
             </div>
             <div className={styles.bar}>
               <div
-                className={`${styles.barFill} ${getStatColor(localStats.health)}`}
+                className={`${styles.barFill} ${getStatColor(
+                  localStats.health
+                )}`}
                 style={{ width: `${Math.max(0, localStats.health)}%` }}
               />
             </div>
@@ -213,23 +313,44 @@ export default function UI() {
         </div>
       )}
 
+      {/* Action Prompts */}
+      {nearbyBuildings.well && (
+        <div className={styles.actionPrompt}>
+          Press [E] to Drink Water at Well
+        </div>
+      )}
+      {nearbyBuildings.farm && (
+        <div className={styles.actionPrompt}>
+          Press [F] to Gather Food at Farm
+        </div>
+      )}
+      {nearbyBuildings.tavern && (
+        <div className={styles.actionPrompt}>Press [R] to Rest at Tavern</div>
+      )}
+
       {/* Action Buttons */}
       <div className={styles.actionsPanel}>
         <button
           className={styles.actionBtn}
           onClick={() => sendAction(ActionType.GATHER_WATER)}
+          disabled={!nearbyBuildings.well}
+          style={{ opacity: nearbyBuildings.well ? 1 : 0.5 }}
         >
           Drink Water [E]
         </button>
         <button
           className={styles.actionBtn}
           onClick={() => sendAction(ActionType.GATHER_FOOD)}
+          disabled={!nearbyBuildings.farm}
+          style={{ opacity: nearbyBuildings.farm ? 1 : 0.5 }}
         >
           Eat Food [F]
         </button>
         <button
           className={styles.actionBtn}
           onClick={() => sendAction(ActionType.REST)}
+          disabled={!nearbyBuildings.tavern}
+          style={{ opacity: nearbyBuildings.tavern ? 1 : 0.5 }}
         >
           Rest [R]
         </button>
@@ -240,12 +361,18 @@ export default function UI() {
         <h4>Controls</h4>
         <div>
           <div>WASD - Move</div>
-          <div>Mouse - Drag to Look Around</div>
-          <div>Shift - Run</div>
+          <div>Mouse - Look Around</div>
           <div>E - Drink Water</div>
           <div>F - Eat Food</div>
           <div>R - Rest</div>
+          <div>Click to lock pointer</div>
         </div>
+        <button
+          className={styles.tutorialBtn}
+          onClick={() => setShowTutorial(true)}
+        >
+          Show Tutorial
+        </button>
       </div>
 
       {/* Players List */}
@@ -269,6 +396,9 @@ export default function UI() {
           <div className={styles.respawnTimer}>{respawnTimer}s</div>
         </div>
       )}
+
+      {/* Tutorial */}
+      <Tutorial />
     </div>
   );
 }
