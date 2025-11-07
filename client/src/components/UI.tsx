@@ -1,22 +1,33 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
   connectionStatusAtom,
   localStatsAtom,
   playersArrayAtom,
   playerIdAtom,
+  showTutorialAtom,
 } from '@/stores/gameAtoms';
 import { ActionType, NetworkMessage, MessageType } from '@my-town/shared';
 import styles from './UI.module.css';
+import Tutorial from './Tutorial';
 
 export default function UI() {
   const connectionStatus = useAtomValue(connectionStatusAtom);
   const localStats = useAtomValue(localStatsAtom);
   const players = useAtomValue(playersArrayAtom);
   const playerId = useAtomValue(playerIdAtom);
+  const setShowTutorial = useSetAtom(showTutorialAtom);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // Check if this is the first time the user is playing
+  useEffect(() => {
+    const tutorialCompleted = localStorage.getItem('tutorialCompleted');
+    if (!tutorialCompleted) {
+      setShowTutorial(true);
+    }
+  }, [setShowTutorial]);
 
   useEffect(() => {
     // Access the WebSocket from window (we'll set it in NetworkManager)
@@ -233,6 +244,12 @@ export default function UI() {
           <div>R - Rest</div>
           <div>Click to lock pointer</div>
         </div>
+        <button
+          className={styles.tutorialBtn}
+          onClick={() => setShowTutorial(true)}
+        >
+          Show Tutorial
+        </button>
       </div>
 
       {/* Players List */}
@@ -246,6 +263,9 @@ export default function UI() {
           ))}
         </div>
       </div>
+
+      {/* Tutorial Overlay */}
+      <Tutorial />
     </div>
   );
 }
