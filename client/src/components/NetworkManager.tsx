@@ -82,6 +82,15 @@ export default function NetworkManager() {
         case MessageType.DISCONNECT:
           removePlayer(message.data.playerId);
           break;
+
+        case MessageType.PLAYER_DEATH:
+          console.log(`${message.data.playerName} has died`);
+          break;
+
+        case MessageType.PLAYER_RESPAWN:
+          updatePlayer(message.data.player);
+          console.log(`${message.data.player.name} has respawned`);
+          break;
       }
     };
 

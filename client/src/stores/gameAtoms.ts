@@ -6,6 +6,7 @@ export const playerIdAtom = atom<string | null>(null);
 export const connectedAtom = atom<boolean>(false);
 export const playersAtom = atom<Map<string, PlayerState>>(new Map());
 export const localStatsAtom = atom<SurvivalStats | null>(null);
+export const isDeadAtom = atom<boolean>(false);
 
 // Derived atom for players array
 export const playersArrayAtom = atom((get) => {
@@ -21,9 +22,10 @@ export const updatePlayerAtom = atom(
     players.set(player.id, player);
     set(playersAtom, players);
 
-    // Update local stats if this is the local player
+    // Update local stats and death state if this is the local player
     if (player.id === get(playerIdAtom)) {
       set(localStatsAtom, player.stats);
+      set(isDeadAtom, player.isDead);
     }
   }
 );

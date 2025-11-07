@@ -12,6 +12,7 @@ export interface PlayerState {
   rotation: number;
   stats: SurvivalStats;
   inventory: InventoryItem[];
+  isDead: boolean;
 }
 
 export interface SurvivalStats {
@@ -59,6 +60,8 @@ export enum MessageType {
   GAME_STATE = 'game_state',
   ACTION = 'action',
   CHAT = 'chat',
+  PLAYER_DEATH = 'player_death',
+  PLAYER_RESPAWN = 'player_respawn',
 }
 
 export interface NetworkMessage {

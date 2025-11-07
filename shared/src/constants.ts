@@ -21,6 +21,9 @@ export const GAME_CONFIG = {
   // World
   TOWN_SIZE: 200,
   DAY_LENGTH_SECONDS: 600, // 10 minutes = 1 day
+
+  // Death and Respawn
+  RESPAWN_DELAY_SECONDS: 5,
 };
 
 // Starting stats

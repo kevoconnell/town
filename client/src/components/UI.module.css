@@ -158,3 +158,38 @@
   padding: 4px 0;
   font-size: 12px;
 }
+
+.deathScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  z-index: 1000;
+}
+
+.deathScreen h2 {
+  font-size: 48px;
+  color: #ff6b6b;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+}
+
+.deathScreen p {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 10px;
+}
+
+.respawnTimer {
+  font-size: 32px;
+  color: #ffd43b;
+  font-weight: bold;
+  margin-top: 20px;
+}
