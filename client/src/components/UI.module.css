@@ -24,6 +24,10 @@
   background: rgba(81, 207, 102, 0.8);
 }
 
+.connecting {
+  background: rgba(255, 212, 59, 0.8);
+}
+
 .disconnected {
   background: rgba(255, 107, 107, 0.8);
 }

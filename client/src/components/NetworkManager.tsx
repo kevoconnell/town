@@ -5,7 +5,7 @@ import { useThree } from '@react-three/fiber';
 import { useSetAtom } from 'jotai';
 import {
   playerIdAtom,
-  connectedAtom,
+  connectionStatusAtom,
   updatePlayerAtom,
   removePlayerAtom,
 } from '@/stores/gameAtoms';
@@ -17,7 +17,7 @@ export default function NetworkManager() {
   const { camera } = useThree();
 
   const setPlayerId = useSetAtom(playerIdAtom);
-  const setConnected = useSetAtom(connectedAtom);
+  const setConnectionStatus = useSetAtom(connectionStatusAtom);
   const updatePlayer = useSetAtom(updatePlayerAtom);
   const removePlayer = useSetAtom(removePlayerAtom);
 
@@ -26,6 +26,7 @@ export default function NetworkManager() {
 
     const connect = () => {
       try {
+        setConnectionStatus('connecting');
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
         // Expose to window for UI component
@@ -33,7 +34,7 @@ export default function NetworkManager() {
 
         ws.onopen = () => {
           console.log('WebSocket connected');
-          setConnected(true);
+          setConnectionStatus('connected');
           reconnectAttemptsRef.current = 0;
         };
 
@@ -44,7 +45,7 @@ export default function NetworkManager() {
 
         ws.onclose = () => {
           console.log('WebSocket disconnected');
-          setConnected(false);
+          setConnectionStatus('disconnected');
 
           // Attempt to reconnect
           if (reconnectAttemptsRef.current < 5) {
@@ -59,6 +60,7 @@ export default function NetworkManager() {
         };
       } catch (error) {
         console.error('Failed to connect:', error);
+        setConnectionStatus('disconnected');
       }
     };
 
@@ -112,7 +114,7 @@ export default function NetworkManager() {
         wsRef.current.close();
       }
     };
-  }, [camera, setPlayerId, setConnected, updatePlayer, removePlayer]);
+  }, [camera, setPlayerId, setConnectionStatus, updatePlayer, removePlayer]);
 
   return null;
 }
