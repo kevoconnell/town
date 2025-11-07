@@ -23,6 +23,14 @@ export const GAME_CONFIG = {
   DAY_LENGTH_SECONDS: 600, // 10 minutes = 1 day
 };
 
+// World boundaries
+export const WORLD_BOUNDS = {
+  MIN_X: -100,
+  MAX_X: 100,
+  MIN_Z: -100,
+  MAX_Z: 100,
+};
+
 // Starting stats
 export const STARTING_STATS = {
   hunger: 100,

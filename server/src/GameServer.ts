@@ -8,6 +8,7 @@ import {
   BuildingType,
   GAME_CONFIG,
   STARTING_STATS,
+  WORLD_BOUNDS,
   generateId,
   clamp,
   ActionType,
@@ -131,7 +132,12 @@ export class GameServer {
       case MessageType.PLAYER_UPDATE:
         // Update player position and rotation
         if (message.data.position) {
-          player.position = message.data.position;
+          // Apply world boundaries - clamp position to valid range
+          player.position = {
+            x: clamp(message.data.position.x, WORLD_BOUNDS.MIN_X, WORLD_BOUNDS.MAX_X),
+            y: message.data.position.y,
+            z: clamp(message.data.position.z, WORLD_BOUNDS.MIN_Z, WORLD_BOUNDS.MAX_Z),
+          };
         }
         if (message.data.rotation !== undefined) {
           player.rotation = message.data.rotation;
