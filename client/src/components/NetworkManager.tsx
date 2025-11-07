@@ -11,15 +11,25 @@ import {
 } from '@/stores/gameAtoms';
 import { NetworkMessage, MessageType, NETWORK_CONFIG } from '@my-town/shared';
 
-export default function NetworkManager() {
+interface NetworkManagerProps {
+  playerName: string;
+}
+
+export default function NetworkManager({ playerName }: NetworkManagerProps) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
+  const playerNameRef = useRef(playerName);
   const { camera } = useThree();
 
   const setPlayerId = useSetAtom(playerIdAtom);
   const setConnected = useSetAtom(connectedAtom);
   const updatePlayer = useSetAtom(updatePlayerAtom);
   const removePlayer = useSetAtom(removePlayerAtom);
+
+  // Update ref when playerName changes
+  useEffect(() => {
+    playerNameRef.current = playerName;
+  }, [playerName]);
 
   useEffect(() => {
     const wsUrl = `ws://${window.location.hostname}:${NETWORK_CONFIG.SERVER_PORT}`;
@@ -35,6 +45,14 @@ export default function NetworkManager() {
           console.log('WebSocket connected');
           setConnected(true);
           reconnectAttemptsRef.current = 0;
+
+          // Send player name to server
+          const nameMessage: NetworkMessage = {
+            type: MessageType.SET_NAME,
+            data: { name: playerNameRef.current },
+            timestamp: Date.now(),
+          };
+          ws.send(JSON.stringify(nameMessage));
         };
 
         ws.onmessage = (event) => {
