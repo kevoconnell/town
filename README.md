@@ -1,3 +1,5 @@
+note: I am using this repo to learn about git worktrees with claude code - this code will most likely not be good at all :)
+
 # My Town - 3D Multiplayer Survival Game
 
 A browser-based 3D survival game where players manage resources, trade, and survive in a multiplayer town environment.
